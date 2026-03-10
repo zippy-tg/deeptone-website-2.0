@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ProfileData, DashboardMode } from '../types';
 import { Book, Activity, Mic2, ArrowDownToLine, Zap } from 'lucide-react';
 import { renderCroppedAvatar } from '../utils/avatarCrop';
+import { extractTransparentLogo } from '../utils/appStoreLogo';
 
 const AppleLogo = ({ size = 20 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 384 512" fill="currentColor">
@@ -16,7 +17,9 @@ interface PhonePreviewProps {
 
 export function PhonePreview({ data, mode }: PhonePreviewProps) {
     const previewWidth = data.useIphoneFrame ? 380 : 450;
+    const isBlackpill = mode === 'blackpill';
     const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
+    const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -48,6 +51,30 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
             cancelled = true;
         };
     }, [data.avatarImage, data.avatarScale, data.avatarOffsetX, data.avatarOffsetY]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        extractTransparentLogo('/app-store-logo.webp')
+            .then((src) => {
+                if (!cancelled) {
+                    setAppStoreBadgeSrc(src);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setAppStoreBadgeSrc(null);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const hzCircleSize = isBlackpill
+        ? (data.useIphoneFrame ? 138 : 148)
+        : 160;
 
     return (
         <div
@@ -90,8 +117,8 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                         </>
                     ) : (
                         <>
-                            <div className="profile-center" style={{ marginTop: mode === 'blackpill' ? '16px' : '0', marginBottom: mode === 'blackpill' ? '16px' : '0' }}>
-                                <div className="avatar-ring">
+                            <div className={`profile-center ${isBlackpill ? 'profile-center-blackpill' : ''}`}>
+                                <div className={`avatar-ring ${isBlackpill ? 'avatar-ring-compact' : ''}`}>
                                     <div className="avatar-circle">
                                         {data.avatarImage ? (
                                             <img src={renderedAvatar ?? data.avatarImage} alt="Avatar" className="avatar-photo" />
@@ -100,7 +127,16 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                         )}
                                     </div>
                                 </div>
-                                <h2 className="user-name" style={{ marginBottom: mode === 'blackpill' ? '16px' : '4px' }}>{data.title}</h2>
+                                <div className={`avatar-app-badge ${isBlackpill ? 'avatar-app-badge-compact' : ''}`}>
+                                    <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                                    <span>DEEPTONE</span>
+                                    <div className="avatar-app-badge-store-icon">
+                                        {appStoreBadgeSrc ? (
+                                            <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" />
+                                        ) : null}
+                                    </div>
+                                </div>
+                                {!isBlackpill && <h2 className="user-name" style={{ marginBottom: '4px' }}>{data.title}</h2>}
                                 {mode === 'standard' && <p className="user-desc">{data.subtitle}</p>}
 
                                 <div className="badges" style={{ justifyContent: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -109,9 +145,12 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                         <span style={{ textTransform: 'capitalize', fontSize: '34px', fontWeight: 900 }}>{data.looksmaxxingRating}</span>
                                     </div>
                                     {mode === 'blackpill' && (
-                                        <p className="rating-subtitle" style={{ color: '#8E8E93', fontSize: '14px', marginTop: '8px', fontWeight: 500, letterSpacing: '0.5px' }}>
-                                            {data.ratingSubtitle}
-                                        </p>
+                                        <>
+                                            <h2 className="user-name user-name-blackpill" style={{ marginBottom: '8px', marginTop: '10px' }}>{data.title}</h2>
+                                            <p className="rating-subtitle" style={{ color: '#8E8E93', fontSize: '14px', marginTop: '0', fontWeight: 500, letterSpacing: '0.5px' }}>
+                                                {data.ratingSubtitle}
+                                            </p>
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -162,7 +201,7 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                 <div className="blackpill-dashboard" style={{ width: '100%', padding: '0 10px', marginTop: '0' }}>
                                     <div className="hz-display-container" style={{ textAlign: 'center', marginBottom: '24px' }}>
                                         <div className="hz-circle" style={{
-                                            width: '160px', height: '160px',
+                                            width: `${hzCircleSize}px`, height: `${hzCircleSize}px`,
                                             borderRadius: '50%', border: '6px solid var(--blue-primary)',
                                             margin: '0 auto', display: 'flex', flexDirection: 'column',
                                             alignItems: 'center', justifyContent: 'center',
@@ -200,7 +239,7 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                 </div>
                             )}
 
-                            <div className="app-store-download" style={{ textAlign: 'center', marginTop: mode === 'blackpill' ? '12px' : '0', marginBottom: mode === 'blackpill' ? '12px' : '24px' }}>
+                            <div className="app-store-download" style={{ textAlign: 'center', marginTop: isBlackpill ? '8px' : '0', marginBottom: isBlackpill ? '0' : '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                     <AppleLogo size={16} />
                                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
