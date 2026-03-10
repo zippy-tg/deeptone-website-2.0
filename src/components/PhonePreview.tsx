@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import type { ProfileData, DashboardMode } from '../types';
 import { Book, Activity, Mic2, ArrowDownToLine, Zap } from 'lucide-react';
+import { renderCroppedAvatar } from '../utils/avatarCrop';
 
 const AppleLogo = ({ size = 20 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 384 512" fill="currentColor">
@@ -13,42 +15,57 @@ interface PhonePreviewProps {
 }
 
 export function PhonePreview({ data, mode }: PhonePreviewProps) {
+    const previewWidth = data.useIphoneFrame ? 380 : 450;
+    const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!data.avatarImage) {
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        renderCroppedAvatar(
+            data.avatarImage,
+            data.avatarScale,
+            data.avatarOffsetX,
+            data.avatarOffsetY
+        )
+            .then((src) => {
+                if (!cancelled) {
+                    setRenderedAvatar(src);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setRenderedAvatar(data.avatarImage);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [data.avatarImage, data.avatarScale, data.avatarOffsetX, data.avatarOffsetY]);
+
     return (
-        <div id="phone-preview-export" style={{
-            position: 'relative',
-            width: data.useIphoneFrame ? '380px' : 'auto', // Overall size made slightly smaller
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: data.useIphoneFrame ? 'transparent' : 'var(--bg-dark)'
-        }}>
+        <div
+            id="phone-preview-export"
+            className={`phone-preview-export ${data.useIphoneFrame ? 'with-frame' : 'without-frame'}`}
+            style={{
+                width: `${previewWidth}px`
+            }}
+        >
             {data.useIphoneFrame && (
                 <img
                     src="/iphone-frame.png"
                     alt="iPhone Frame"
-                    style={{
-                        width: '100%',
-                        height: 'auto',
-                        zIndex: 10,
-                        pointerEvents: 'none',
-                        position: 'relative',
-                        display: 'block'
-                    }}
+                    className="iphone-frame"
                 />
             )}
-            <div className="phone-screen" style={{
-                width: data.useIphoneFrame ? '92%' : 'auto',
-                height: data.useIphoneFrame ? '97%' : '800px',
-                borderRadius: data.useIphoneFrame ? '44px' : '0',
-                position: data.useIphoneFrame ? 'absolute' : 'relative',
-                zIndex: 1,
-                left: data.useIphoneFrame ? '50%' : 'auto',
-                top: data.useIphoneFrame ? '50%' : 'auto',
-                transform: data.useIphoneFrame ? 'translate(-50%, -50%)' : 'none',
-                backgroundColor: 'var(--bg-dark)'
-            }}>
 
-
+            <div className={`phone-screen ${data.useIphoneFrame ? 'phone-screen-framed' : 'phone-screen-plain'}`}>
                 <div className={`screen-content ${mode === 'blackpill' ? 'blackpill-layout' : mode === 'testVoice' ? 'test-voice-layout' : 'standard-layout'}`} style={{ overflowY: mode === 'blackpill' || mode === 'testVoice' ? 'hidden' : 'auto' }}>
                     {mode === 'testVoice' ? (
                         <>
@@ -77,7 +94,7 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                 <div className="avatar-ring">
                                     <div className="avatar-circle">
                                         {data.avatarImage ? (
-                                            <img src={data.avatarImage} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                            <img src={renderedAvatar ?? data.avatarImage} alt="Avatar" className="avatar-photo" />
                                         ) : (
                                             <Book className="avatar-icon" size={56} />
                                         )}
@@ -168,7 +185,7 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                             </div>
                                         </div>
 
-                                        <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div className="blackpill-stat-grid">
                                             <div className="stat-card" style={{ flex: 1, backgroundColor: '#1C1C1E', padding: '16px', borderRadius: '16px', textAlign: 'center', border: '1px solid #333' }}>
                                                 <span style={{ color: '#8E8E93', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Percentile</span>
                                                 <span style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>{data.percentile}</span>

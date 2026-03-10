@@ -9,50 +9,106 @@ interface ControlPanelProps {
     onModeChange: (mode: DashboardMode) => void;
 }
 
+type ExportFormat = 'portrait' | 'square';
+
+const EXPORT_DIMENSIONS: Record<ExportFormat, { width: number; height: number; label: string }> = {
+    portrait: { width: 2160, height: 3840, label: '4k' },
+    square: { width: 2160, height: 2160, label: '4k-1x1' }
+};
+
 export function ControlPanel({ data, onChange, mode, onModeChange }: ControlPanelProps) {
+    const updateData = (updates: Partial<ProfileData>) => {
+        onChange({
+            ...data,
+            ...updates
+        });
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
 
         let parsedValue: string | number | boolean = value;
 
-        if (type === 'number') {
+        if (type === 'number' || type === 'range') {
             parsedValue = Number(value);
         } else if (type === 'checkbox') {
             parsedValue = (e.target as HTMLInputElement).checked;
         }
 
-        onChange({
-            ...data,
+        updateData({
             [name]: parsedValue
-        });
+        } as Partial<ProfileData>);
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            onChange({ ...data, avatarImage: url });
-        }
+        if (!file) return;
+
+        const url = URL.createObjectURL(file);
+        updateData({
+            avatarImage: url,
+            avatarScale: 1,
+            avatarOffsetX: 0,
+            avatarOffsetY: 0
+        });
     };
 
-    const handleExport = async () => {
+    const resetAvatarCrop = () => {
+        updateData({
+            avatarScale: 1,
+            avatarOffsetX: 0,
+            avatarOffsetY: 0
+        });
+    };
+
+    const handleExport = async (format: ExportFormat) => {
         const previewElement = document.getElementById('phone-preview-export');
         if (!previewElement) return;
 
-        // html2canvas takes a scale parameter. Scale 4 on a ~400px width element yields ~1600px width (high res).
-        // Since we want 4K (2160x3840 typically), we can bump the scale depending on base width. 
-        // 400 * 5 = 2000px width, 700 * 5 = 3500px height. We'll use scale: 5 for a solid 4K-ish aspect export.
-        const canvas = await html2canvas(previewElement, {
-            scale: 5,
+        const bounds = previewElement.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return;
+
+        const target = EXPORT_DIMENSIONS[format];
+        const captureScale = Math.max(
+            target.width / bounds.width,
+            target.height / bounds.height,
+            2
+        );
+
+        const capturedCanvas = await html2canvas(previewElement, {
+            scale: captureScale,
             useCORS: true,
-            backgroundColor: '#000000',
+            backgroundColor: '#000000'
         });
 
-        // Use file-saver to force cross-browser compatibility and prevent
-        // Safari/WebKit from assigning a random UUID instead of the filename.
-        canvas.toBlob((blob) => {
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = target.width;
+        exportCanvas.height = target.height;
+
+        const context = exportCanvas.getContext('2d');
+        if (!context) return;
+
+        context.fillStyle = '#000000';
+        context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        const scale = Math.min(
+            exportCanvas.width / capturedCanvas.width,
+            exportCanvas.height / capturedCanvas.height
+        );
+        const drawWidth = capturedCanvas.width * scale;
+        const drawHeight = capturedCanvas.height * scale;
+        const x = (exportCanvas.width - drawWidth) / 2;
+        const y = (exportCanvas.height - drawHeight) / 2;
+
+        context.drawImage(capturedCanvas, x, y, drawWidth, drawHeight);
+
+        exportCanvas.toBlob((blob) => {
             if (!blob) return;
-            saveAs(blob, `looksmaxxing-profile-${data.looksmaxxingRating.toLowerCase()}.png`);
+
+            saveAs(
+                blob,
+                `looksmaxxing-profile-${data.looksmaxxingRating.toLowerCase()}-${target.label}.png`
+            );
         }, 'image/png', 1.0);
     };
 
@@ -61,52 +117,25 @@ export function ControlPanel({ data, onChange, mode, onModeChange }: ControlPane
             <h2>Profile Editor</h2>
             <p className="subtitle">Customize the values for your TikTok mockup</p>
 
-            <div className="mode-switch" style={{ display: 'flex', gap: '8px', marginBottom: '24px', backgroundColor: '#1C1C1E', padding: '4px', borderRadius: '8px' }}>
+            <div className="mode-switch">
                 <button
+                    type="button"
                     onClick={() => onModeChange('standard')}
-                    style={{
-                        flex: 1,
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        backgroundColor: mode === 'standard' ? '#2C2C2E' : 'transparent',
-                        color: mode === 'standard' ? 'white' : '#8E8E93',
-                        fontWeight: mode === 'standard' ? 600 : 400,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
+                    className={mode === 'standard' ? 'active' : ''}
                 >
                     Standard
                 </button>
                 <button
+                    type="button"
                     onClick={() => onModeChange('blackpill')}
-                    style={{
-                        flex: 1,
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        backgroundColor: mode === 'blackpill' ? '#2C2C2E' : 'transparent',
-                        color: mode === 'blackpill' ? 'white' : '#8E8E93',
-                        fontWeight: mode === 'blackpill' ? 600 : 400,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
+                    className={mode === 'blackpill' ? 'active' : ''}
                 >
                     Blackpill
                 </button>
                 <button
+                    type="button"
                     onClick={() => onModeChange('testVoice')}
-                    style={{
-                        flex: 1,
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        backgroundColor: mode === 'testVoice' ? '#2C2C2E' : 'transparent',
-                        color: mode === 'testVoice' ? 'white' : '#8E8E93',
-                        fontWeight: mode === 'testVoice' ? 600 : 400,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
+                    className={mode === 'testVoice' ? 'active' : ''}
                 >
                     Test Voice
                 </button>
@@ -142,13 +171,78 @@ export function ControlPanel({ data, onChange, mode, onModeChange }: ControlPane
                 </div>
                 <div className="form-group">
                     <label>Avatar Image</label>
-                    <input type="file" accept="image/*" onChange={handleImageUpload} style={{ color: 'white', padding: '10px 0' }} />
+                    <input className="file-input" type="file" accept="image/*" onChange={handleImageUpload} />
                 </div>
             </div>
 
-            <div className="form-group checkbox-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '8px', marginBottom: '24px', justifyContent: 'flex-start' }}>
+            {data.avatarImage && (
+                <div className="avatar-crop-panel">
+                    <div className="avatar-crop-header">
+                        <span>Avatar crop</span>
+                        <button type="button" className="secondary-btn" onClick={resetAvatarCrop}>
+                            Reset
+                        </button>
+                    </div>
+
+                    <div className="avatar-crop-preview">
+                        <img
+                            src={data.avatarImage}
+                            alt="Avatar crop preview"
+                            style={{
+                                transform: `translate(${data.avatarOffsetX}px, ${data.avatarOffsetY}px) scale(${data.avatarScale})`
+                            }}
+                        />
+                    </div>
+
+                    <div className="crop-controls">
+                        <label>
+                            <span>Zoom</span>
+                            <strong>{data.avatarScale.toFixed(2)}x</strong>
+                        </label>
+                        <input
+                            type="range"
+                            name="avatarScale"
+                            min="1"
+                            max="2.5"
+                            step="0.01"
+                            value={data.avatarScale}
+                            onChange={handleChange}
+                        />
+
+                        <label>
+                            <span>Horizontal</span>
+                            <strong>{data.avatarOffsetX}px</strong>
+                        </label>
+                        <input
+                            type="range"
+                            name="avatarOffsetX"
+                            min="-80"
+                            max="80"
+                            step="1"
+                            value={data.avatarOffsetX}
+                            onChange={handleChange}
+                        />
+
+                        <label>
+                            <span>Vertical</span>
+                            <strong>{data.avatarOffsetY}px</strong>
+                        </label>
+                        <input
+                            type="range"
+                            name="avatarOffsetY"
+                            min="-80"
+                            max="80"
+                            step="1"
+                            value={data.avatarOffsetY}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </div>
+            )}
+
+            <div className="form-group checkbox-group checkbox-inline">
                 <input type="checkbox" id="useIphoneFrame" name="useIphoneFrame" checked={data.useIphoneFrame} onChange={handleChange} />
-                <label htmlFor="useIphoneFrame" style={{ margin: 0, fontSize: '14px' }}>Wrap in iPhone Frame</label>
+                <label htmlFor="useIphoneFrame">Wrap in iPhone Frame</label>
             </div>
 
             {mode === 'standard' ? (
@@ -210,7 +304,7 @@ export function ControlPanel({ data, onChange, mode, onModeChange }: ControlPane
                     </div>
 
                     <div className="form-row">
-                        <div className="form-group" style={{ width: '100%' }}>
+                        <div className="form-group control-full-width">
                             <label>Cortisol Level</label>
                             <select name="cortisolLevel" value={data.cortisolLevel} onChange={handleChange}>
                                 <option value="Low">Low</option>
@@ -236,24 +330,22 @@ export function ControlPanel({ data, onChange, mode, onModeChange }: ControlPane
                 </>
             )}
 
-            <button
-                className="export-btn"
-                onClick={handleExport}
-                style={{
-                    width: '100%',
-                    padding: '16px',
-                    marginTop: '24px',
-                    backgroundColor: 'var(--blue-primary)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                }}
-            >
-                Export in 4K
-            </button>
+            <div className="export-actions">
+                <button
+                    type="button"
+                    className="export-btn"
+                    onClick={() => handleExport('portrait')}
+                >
+                    Export in 4K
+                </button>
+                <button
+                    type="button"
+                    className="export-btn export-btn-secondary"
+                    onClick={() => handleExport('square')}
+                >
+                    Export in 4K 1:1
+                </button>
+            </div>
         </div>
     );
 }

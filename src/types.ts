@@ -3,6 +3,9 @@ export interface ProfileData {
   subtitle: string;
   looksmaxxingRating: string;
   avatarImage: string | null;
+  avatarScale: number;
+  avatarOffsetX: number;
+  avatarOffsetY: number;
   authorityScore: number;
   vocalAgeScore: number;
   potentialScore: number;
