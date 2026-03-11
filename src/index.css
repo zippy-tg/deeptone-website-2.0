@@ -571,6 +571,7 @@ select {
   justify-content: center;
   font-size: 44px;
   font-weight: 800;
+  line-height: 1;
 }
 
 .square-ui-score-label {
@@ -1692,6 +1693,7 @@ select {
   justify-content: center;
   font-size: 28px;
   font-weight: 800;
+  line-height: 1;
 }
 
 .circular-progress.white .circle-progress {

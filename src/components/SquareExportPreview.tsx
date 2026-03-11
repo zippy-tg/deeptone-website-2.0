@@ -75,14 +75,15 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
     const hzProgress = Math.max(8, Math.min(100, (Number.parseFloat(data.hzValue) || 0) / 2));
     const vocalAgeProgress = Math.max(8, Math.min(100, data.vocalAgeScore));
     const potentialRating = data.potentialRating;
-    const createMinimalCardStyle = (startColor: string, endColor: string) => ({
-        background: `linear-gradient(135deg, #101319 0%, #0c1018 52%, ${hexToRgba(startColor, 0.14)} 100%)`,
+    const createMinimalCardStyle = (_startColor: string, endColor: string) => ({
+        background: 'linear-gradient(135deg, #101319 0%, #0d121b 100%)',
         border: `1px solid ${hexToRgba(endColor, 0.34)}`,
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04)'
     });
     const createGradientTextStyle = (_startColor: string, endColor: string) => ({
         color: endColor,
-        textShadow: 'none'
+        textShadow: 'none',
+        backgroundImage: 'none'
     });
     const minimalAvatarRingStyle = {
         background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,

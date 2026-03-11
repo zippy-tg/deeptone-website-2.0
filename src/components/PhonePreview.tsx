@@ -105,7 +105,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     const potentialRating = data.potentialRating;
     const createMinimalCardStyle = (startColor: string, endColor: string) => ({
         background: isExportRender
-            ? `linear-gradient(135deg, #101319 0%, #0c1018 52%, ${hexToRgba(startColor, 0.14)} 100%)`
+            ? `linear-gradient(135deg, #101319 0%, #0d121b 100%)`
             : `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
         border: `1px solid ${hexToRgba(endColor, 0.3)}`,
         boxShadow: isExportRender
@@ -116,7 +116,8 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         isExportRender
             ? {
                 color: endColor,
-                textShadow: 'none'
+                textShadow: 'none',
+                backgroundImage: 'none'
             }
             : {
                 backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
