@@ -2,7 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { Book, Activity, Mic2, ArrowDownToLine, Zap } from 'lucide-react';
 import type { DashboardMode, ProfileData } from '../types';
 import { renderCroppedAvatar } from '../utils/avatarCrop';
-import { extractTransparentLogo } from '../utils/appStoreLogo';
+import { extractTransparentLogo, imageToDataUri } from '../utils/appStoreLogo';
 import { hexToRgba } from '../utils/color';
 import appIcon from '../assets/app-icon.png';
 import appStoreLogoBase from '../assets/app-store-logo.webp';
@@ -21,6 +21,7 @@ const AppleLogo = ({ size = 18 }: { size?: number }) => (
 export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
     const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
     const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
+    const [appIconBase64, setAppIconBase64] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -67,11 +68,21 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                 }
             });
 
+        // Also inline the app icon for Safari export reliability
+        imageToDataUri(appIcon)
+            .then(uri => { if (!cancelled) setAppIconBase64(uri); })
+            .catch(() => { if (!cancelled) setAppIconBase64(appIcon); });
+
         return () => {
             cancelled = true;
         };
     }, []);
 
+    const allAssetsLoaded = !data.avatarImage || (renderedAvatar && appIconBase64);
+
+    if (!allAssetsLoaded) {
+        return null;
+    }
     const avatarSrc = data.avatarImage ? (renderedAvatar ?? data.avatarImage) : null;
     const hzProgress = Math.max(8, Math.min(100, (Number.parseFloat(data.hzValue) || 0) / 2));
     const vocalAgeProgress = Math.max(8, Math.min(100, data.vocalAgeScore));
@@ -209,7 +220,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                             <p>Download on the App Store</p>
                         </div>
                         <div className="square-ui-download-row square-ui-download-row-strong">
-                            <img src={appIcon} alt="App Icon" />
+                            <img src={appIconBase64 || appIcon} alt="App Icon" />
                             <p>Search <span>Deeptone</span></p>
                         </div>
                     </div>
@@ -228,7 +239,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                         </div>
 
                         <div className={`avatar-app-badge ${mode === 'blackpill' ? 'avatar-app-badge-compact' : ''}`}>
-                            <img src={appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                            <img src={appIconBase64 || appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
@@ -246,7 +257,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
 
                         <div className="square-ui-rating-block">
                             <div className="square-ui-rating-line">
-                                <img src={appIcon} alt="App Icon" className="square-ui-rating-icon" />
+                                <img src={appIconBase64 || appIcon} alt="App Icon" className="square-ui-rating-icon" />
                                 <span className="square-ui-rating-value">{data.looksmaxxingRating}</span>
                             </div>
 
@@ -339,7 +350,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                             <p>Download on the App Store</p>
                         </div>
                         <div className="square-ui-download-row square-ui-download-row-strong">
-                            <img src={appIcon} alt="App Icon" />
+                            <img src={appIconBase64 || appIcon} alt="App Icon" />
                             <p>Search <span>Deeptone</span></p>
                         </div>
                     </div>
