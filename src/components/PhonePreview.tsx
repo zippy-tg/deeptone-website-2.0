@@ -6,7 +6,7 @@ import { extractTransparentLogo } from '../utils/appStoreLogo';
 import { hexToRgba } from '../utils/color';
 
 const AppleLogo = ({ size = 20 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 384 512" fill="currentColor">
+    <svg width={size} height={size} viewBox="0 0 384 512" fill="currentColor" className="apple-logo-icon" aria-hidden="true">
         <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
     </svg>
 );
@@ -80,6 +80,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         };
     }, []);
 
+
     useEffect(() => {
         if (typeof window === 'undefined') {
             return undefined;
@@ -104,33 +105,21 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     const vocalAgeProgress = Math.max(8, Math.min(100, data.vocalAgeScore));
     const potentialRating = data.potentialRating;
     const createMinimalCardStyle = (startColor: string, endColor: string) => ({
-        background: isExportRender
-            ? `linear-gradient(135deg, #101319 0%, #0d121b 100%)`
-            : `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
+        background: `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
         border: `1px solid ${hexToRgba(endColor, 0.3)}`,
-        boxShadow: isExportRender
-            ? 'inset 0 1px 0 rgba(255, 255, 255, 0.04)'
-            : `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
+        boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
     });
-    const createGradientTextStyle = (startColor: string, endColor: string) => (
-        isExportRender
-            ? {
-                color: endColor,
-                textShadow: 'none',
-                backgroundImage: 'none'
-            }
-            : {
-                backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                color: 'transparent',
-                WebkitTextFillColor: 'transparent',
-                textShadow: `0 0 18px ${hexToRgba(endColor, 0.2)}`
-            }
-    );
+    const createGradientTextStyle = (startColor: string, endColor: string) => ({
+        backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        color: 'transparent',
+        WebkitTextFillColor: 'transparent',
+        textShadow: `0 0 18px ${hexToRgba(endColor, 0.2)}`
+    });
     const minimalAvatarRingStyle = {
         background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,
-        boxShadow: isExportRender ? 'none' : `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
+        boxShadow: `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
     };
     const frameAspectRatio = 1024 / 495;
     const basePreviewHeight = data.useIphoneFrame
@@ -158,12 +147,11 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
             }
             : {})
     }), [isLiveMobile, liveScale, previewWidth]);
-
     const previewContent = (
         <div
             id={exportId}
             className={`phone-preview-export ${renderMode === 'export' ? 'export-render' : 'live-render'} ${data.useIphoneFrame ? 'with-frame' : 'without-frame'}`}
-            style={livePreviewStyle}
+            style={isExportRender ? { width: `${previewWidth}px`, height: `${basePreviewHeight}px` } : livePreviewStyle}
         >
             {data.useIphoneFrame && (
                 <img
@@ -201,11 +189,11 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                             <div className="minimal-layout">
                                 <div className="minimal-top-badge">
                                     <div className="avatar-app-badge">
-                                        <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                                        <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
                                         <span>DEEPTONE</span>
                                         <div className="avatar-app-badge-store-icon">
                                             {appStoreBadgeSrc ? (
-                                                <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" />
+                                                <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" width="24" height="24" />
                                             ) : null}
                                         </div>
                                     </div>
@@ -293,7 +281,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
-                                    <img src="/app-icon.png" alt="App Icon" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
+                                    <img src="/app-icon.png" alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
                                     <p style={{ fontSize: '16px', fontWeight: 700 }}>Search <span style={{ color: 'var(--blue-light)' }}>Deeptone</span></p>
                                 </div>
                             </div>
@@ -311,11 +299,11 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     </div>
                                 </div>
                                 <div className={`avatar-app-badge ${isBlackpill ? 'avatar-app-badge-compact' : ''}`}>
-                                    <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                                    <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
                                     <span>DEEPTONE</span>
                                     <div className="avatar-app-badge-store-icon">
                                         {appStoreBadgeSrc ? (
-                                            <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" />
+                                            <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" width="24" height="24" />
                                         ) : null}
                                     </div>
                                 </div>
@@ -324,7 +312,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
 
                                 <div className="badges" style={{ justifyContent: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <div className="badge looksmaxxing-badge" style={{ gap: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-15px' }}>
-                                        <img src="/app-icon.png" alt="App Icon" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                                        <img src="/app-icon.png" alt="App Icon" width="40" height="40" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                                         <span style={{ textTransform: 'capitalize', fontSize: '34px', fontWeight: 900 }}>{data.looksmaxxingRating}</span>
                                     </div>
                                     {mode === 'blackpill' && (
@@ -428,7 +416,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
-                                    <img src="/app-icon.png" alt="App Icon" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
+                                    <img src="/app-icon.png" alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
                                     <p style={{ fontSize: '16px', fontWeight: 700 }}>Search <span style={{ color: 'var(--blue-light)' }}>Deeptone</span></p>
                                 </div>
                             </div>

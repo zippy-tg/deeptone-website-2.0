@@ -1,5 +1,5 @@
 import type { ProfileData, DashboardMode } from '../types';
-import html2canvas from 'html2canvas';
+import { toBlob } from 'html-to-image';
 import { saveAs } from 'file-saver';
 
 interface ControlPanelProps {
@@ -17,6 +17,46 @@ const EXPORT_DIMENSIONS: Record<ExportFormat, { width: number; height: number; l
     portrait: { width: 2160, height: 3840, label: '4k' },
     square: { width: 2160, height: 2160, label: '4k-1x1' }
 };
+
+async function waitForDocumentFonts() {
+    if ('fonts' in document) {
+        await document.fonts.ready;
+    }
+}
+
+async function waitForExportImages(root: HTMLElement) {
+    const images = Array.from(root.querySelectorAll('img'));
+
+    await Promise.all(images.map((image) => {
+        if (image.complete && image.naturalWidth > 0) {
+            return image.decode?.().catch(() => undefined) ?? Promise.resolve();
+        }
+
+        return new Promise<void>((resolve) => {
+            const finish = () => {
+                image.removeEventListener('load', finish);
+                image.removeEventListener('error', finish);
+                resolve();
+            };
+
+            image.addEventListener('load', finish, { once: true });
+            image.addEventListener('error', finish, { once: true });
+        });
+    }));
+}
+
+async function waitForExportAssets(root: HTMLElement) {
+    await waitForDocumentFonts();
+    await waitForExportImages(root);
+
+    await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => resolve());
+        });
+    });
+}
+
+// Note: stabilizeBadgeClone is no longer needed since html-to-image handles SVG and fonts much better.
 
 export function ControlPanel({ data, onChange, mode, onModeChange, modeLocked = false, onBack }: ControlPanelProps) {
     const isMinimal = mode === 'minimal';
@@ -74,76 +114,29 @@ export function ControlPanel({ data, onChange, mode, onModeChange, modeLocked = 
         if (!bounds.width || !bounds.height) return;
 
         const target = EXPORT_DIMENSIONS[format];
-        const minimumCaptureScale = format === 'square' ? 4 : 2;
-        const captureScale = Math.max(
-            target.width / bounds.width,
-            target.height / bounds.height,
-            minimumCaptureScale
-        );
-
-        await new Promise<void>((resolve) => {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => resolve());
-            });
-        });
-
-        const capturedCanvas = await html2canvas(previewElement, {
-            scale: captureScale,
-            useCORS: true,
+        await waitForExportAssets(previewElement);
+        
+        // Use html-to-image, which supports gradients, text-clip, mask-image, etc
+        const blob = await toBlob(previewElement, {
+            pixelRatio: format === 'portrait' ? target.width / bounds.width : target.width / bounds.width,
             backgroundColor: '#000000',
-            windowWidth: 1280,
-            windowHeight: 1400,
-            scrollX: 0,
-            scrollY: 0,
-            onclone: (clonedDocument) => {
-                const clonedPreview = clonedDocument.getElementById(
-                    format === 'square' ? 'square-preview-export' : 'phone-preview-export'
-                );
-                if (!clonedPreview) return;
-
-                if (format === 'portrait') {
-                    const clonedSurface = clonedPreview.parentElement;
-                    if (clonedSurface) {
-                        clonedSurface.setAttribute('style', 'position: fixed; left: 0; top: 0; pointer-events: none;');
-                    }
-                }
-
-                clonedPreview.setAttribute(
-                    'style',
-                    `${clonedPreview.getAttribute('style') ?? ''}; position: ${format === 'square' ? 'fixed' : 'relative'}; left: 0; top: 0; transform: none;`
-                );
+            width: bounds.width,
+            height: bounds.height,
+            style: {
+                transform: 'none',
+                position: 'relative',
+                left: '0',
+                top: '0',
+                margin: '0'
             }
         });
 
-        const exportCanvas = document.createElement('canvas');
-        exportCanvas.width = target.width;
-        exportCanvas.height = target.height;
+        if (!blob) return;
 
-        const context = exportCanvas.getContext('2d');
-        if (!context) return;
-
-        context.fillStyle = '#000000';
-        context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-        const scale = Math.min(
-            exportCanvas.width / capturedCanvas.width,
-            exportCanvas.height / capturedCanvas.height
+        saveAs(
+            blob,
+            `looksmaxxing-profile-${data.looksmaxxingRating.toLowerCase()}-${target.label}.png`
         );
-        const drawWidth = capturedCanvas.width * scale;
-        const drawHeight = capturedCanvas.height * scale;
-        const x = (exportCanvas.width - drawWidth) / 2;
-        const y = (exportCanvas.height - drawHeight) / 2;
-
-        context.drawImage(capturedCanvas, x, y, drawWidth, drawHeight);
-
-        exportCanvas.toBlob((blob) => {
-            if (!blob) return;
-
-            saveAs(
-                blob,
-                `looksmaxxing-profile-${data.looksmaxxingRating.toLowerCase()}-${target.label}.png`
-            );
-        }, 'image/png', 1.0);
     };
 
     return (
@@ -492,17 +485,13 @@ export function ControlPanel({ data, onChange, mode, onModeChange, modeLocked = 
                 >
                     Export in 4K
                 </button>
-                {isMinimal ? (
-                    <p className="export-note">Minimal export is portrait only. 4K 1:1 isn&apos;t supported.</p>
-                ) : (
-                    <button
-                        type="button"
-                        className="export-btn export-btn-secondary"
-                        onClick={() => handleExport('square')}
-                    >
-                        Export in 4K 1:1
-                    </button>
-                )}
+                <button
+                    type="button"
+                    className="export-btn export-btn-secondary"
+                    onClick={() => handleExport('square')}
+                >
+                    Export in 4K 1:1
+                </button>
             </div>
         </div>
     );

@@ -148,8 +148,8 @@ function App() {
           exportId="phone-preview-export"
           renderMode="export"
         />
+        <SquareExportPreview data={profileData} mode={dashboardMode} />
       </div>
-      <SquareExportPreview data={profileData} mode={dashboardMode} />
     </div>
   );
 }
