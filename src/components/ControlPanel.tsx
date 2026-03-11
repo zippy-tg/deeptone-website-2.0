@@ -28,14 +28,21 @@ async function waitForExportImages(root: HTMLElement) {
     const images = Array.from(root.querySelectorAll('img'));
 
     await Promise.all(images.map((image) => {
-        if (image.complete && image.naturalWidth > 0) {
+        // Even if complete, we force a decode to ensure it's in GPU memory
+        if (image.complete) {
             return image.decode?.().catch(() => undefined) ?? Promise.resolve();
         }
 
         return new Promise<void>((resolve) => {
-            const finish = () => {
+            const finish = async () => {
                 image.removeEventListener('load', finish);
                 image.removeEventListener('error', finish);
+                // After load, try to decode as well
+                try {
+                    await image.decode?.();
+                } catch {
+                    // Ignore decode errors
+                }
                 resolve();
             };
 
@@ -43,6 +50,9 @@ async function waitForExportImages(root: HTMLElement) {
             image.addEventListener('error', finish, { once: true });
         });
     }));
+
+    // Critical: Add a small sleep for mobile Safari to finish painting Data URIs
+    await new Promise(resolve => setTimeout(resolve, 100));
 }
 
 async function waitForExportAssets(root: HTMLElement) {

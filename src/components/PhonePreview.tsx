@@ -169,17 +169,10 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
             style={isExportRender ? { width: `${previewWidth}px`, height: `${basePreviewHeight}px` } : livePreviewStyle}
         >
             {data.useIphoneFrame && (
-                <div 
+                <img
+                    src={iphoneFrameBase64 || iphoneFrame}
+                    alt="iPhone Frame"
                     className="iphone-frame"
-                    style={{ 
-                        backgroundImage: `url(${iphoneFrameBase64 || iphoneFrame})`,
-                        backgroundSize: '100% 100%',
-                        backgroundRepeat: 'no-repeat',
-                        position: 'absolute',
-                        inset: 0,
-                        zIndex: 10,
-                        pointerEvents: 'none'
-                    }}
                 />
             )}
 
@@ -214,26 +207,24 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                         <div 
                                             className="avatar-app-badge-main-icon" 
                                             style={{ 
-                                                backgroundImage: `url(${appIconBase64 || appIcon})`, 
-                                                backgroundSize: 'contain', 
-                                                backgroundRepeat: 'no-repeat',
                                                 width: '22px', 
                                                 height: '22px'
                                             }} 
-                                        />
+                                        >
+                                            <img src={appIconBase64 || appIcon} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
+                                        </div>
                                         <span>DEEPTONE</span>
                                         <div className="avatar-app-badge-store-icon">
                                             {appStoreBadgeSrc ? (
                                                 <div 
                                                     className="avatar-app-badge-store-icon-image" 
                                                     style={{ 
-                                                        backgroundImage: `url(${appStoreBadgeSrc})`, 
-                                                        backgroundSize: 'contain', 
-                                                        backgroundRepeat: 'no-repeat',
                                                         width: '24px', 
                                                         height: '24px'
                                                     }} 
-                                                />
+                                                >
+                                                    <img src={appStoreBadgeSrc} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
+                                                </div>
                                             ) : null}
                                         </div>
                                     </div>
@@ -242,16 +233,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                 <div className="minimal-avatar-ring" style={minimalAvatarRingStyle}>
                                     <div className="minimal-avatar-circle">
                                         {data.avatarImage ? (
-                                            <div 
-                                                className="minimal-avatar-image"
-                                                style={{ 
-                                                    backgroundImage: `url(${renderedAvatar ?? data.avatarImage})`, 
-                                                    backgroundSize: 'cover', 
-                                                    backgroundPosition: 'center',
-                                                    width: '100%',
-                                                    height: '100%'
-                                                }}
-                                            />
+                                            <img src={renderedAvatar ?? data.avatarImage} alt="Avatar" className="minimal-avatar-image" />
                                         ) : (
                                             <Book className="minimal-avatar-fallback" size={82} />
                                         )}
@@ -330,16 +312,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
-                                    <div 
-                                        style={{ 
-                                            backgroundImage: `url(${appIconBase64 || appIcon})`, 
-                                            backgroundSize: 'contain', 
-                                            backgroundRepeat: 'no-repeat',
-                                            width: '22px', 
-                                            height: '22px', 
-                                            borderRadius: '4px' 
-                                        }} 
-                                    />
+                                    <img src={appIconBase64 || appIcon} alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
                                     <p style={{ fontSize: '16px', fontWeight: 700 }}>Search <span style={{ color: 'var(--blue-light)' }}>Deeptone</span></p>
                                 </div>
                             </div>
@@ -359,27 +332,19 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                 <div className={`avatar-app-badge ${isBlackpill ? 'avatar-app-badge-compact' : ''}`}>
                                     <div 
                                         className="avatar-app-badge-main-icon" 
-                                        style={{ 
-                                            backgroundImage: `url(${appIconBase64 || appIcon})`, 
-                                            backgroundSize: 'contain', 
-                                            backgroundRepeat: 'no-repeat',
-                                            width: '22px', 
-                                            height: '22px'
-                                        }} 
-                                    />
+                                        style={{ width: '22px', height: '22px' }} 
+                                    >
+                                        <img src={appIconBase64 || appIcon} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
+                                    </div>
                                     <span>DEEPTONE</span>
                                     <div className="avatar-app-badge-store-icon">
                                         {appStoreBadgeSrc ? (
                                             <div 
                                                 className="avatar-app-badge-store-icon-image" 
-                                                style={{ 
-                                                    backgroundImage: `url(${appStoreBadgeSrc})`, 
-                                                    backgroundSize: 'contain', 
-                                                    backgroundRepeat: 'no-repeat',
-                                                    width: '24px', 
-                                                    height: '24px'
-                                                }} 
-                                            />
+                                                style={{ width: '24px', height: '24px' }} 
+                                            >
+                                                <img src={appStoreBadgeSrc} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
+                                            </div>
                                         ) : null}
                                     </div>
                                 </div>
@@ -388,15 +353,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
 
                                 <div className="badges" style={{ justifyContent: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <div className="badge looksmaxxing-badge" style={{ gap: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-15px' }}>
-                                        <div 
-                                            style={{ 
-                                                backgroundImage: `url(${appIconBase64 || appIcon})`, 
-                                                backgroundSize: 'contain', 
-                                                backgroundRepeat: 'no-repeat',
-                                                width: '40px', 
-                                                height: '40px' 
-                                            }} 
-                                        />
+                                        <img src={appIconBase64 || appIcon} alt="App Icon" width="40" height="40" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                                         <span style={{ textTransform: 'capitalize', fontSize: '34px', fontWeight: 900 }}>{data.looksmaxxingRating}</span>
                                     </div>
                                     {mode === 'blackpill' && (

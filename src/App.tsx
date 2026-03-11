@@ -142,6 +142,22 @@ function App() {
         </div>
       </div>
       <div className="hidden-export-surface" aria-hidden="true">
+        {/* Voodoo image to force decode and keep asset alive in mobile Safari */}
+        {profileData.avatarImage && (
+          <img 
+            src={profileData.avatarImage} 
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              width: '1px', 
+              height: '1px', 
+              opacity: 0.01,
+              pointerEvents: 'none'
+            }} 
+            alt=""
+          />
+        )}
         <PhonePreview
           data={profileData}
           mode={dashboardMode}
