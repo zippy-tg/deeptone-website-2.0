@@ -346,9 +346,14 @@ select {
 
 .hidden-export-surface {
   position: fixed;
-  left: -2000px;
+  left: 0;
   top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0.01;
   pointer-events: none;
+  z-index: -1;
 }
 
 .square-ui-export {

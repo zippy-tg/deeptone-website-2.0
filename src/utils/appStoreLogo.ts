@@ -80,19 +80,26 @@ export async function extractTransparentLogo(src: string): Promise<string> {
 }
 
 export async function imageToDataUri(src: string): Promise<string> {
-  const image = await loadImage(src);
-  const canvas = document.createElement('canvas');
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
-
-  const context = canvas.getContext('2d');
-  if (!context) {
-    throw new Error('Could not create image canvas context');
+  try {
+    const response = await fetch(src);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('FileReader failed'));
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    // Fallback to canvas if fetch fails (though fetch is usually more reliable for local assets)
+    const image = await loadImage(src);
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Could not create image canvas context');
+    context.drawImage(image, 0, 0);
+    return canvas.toDataURL('image/png');
   }
-
-  context.drawImage(image, 0, 0);
-
-  return canvas.toDataURL('image/png');
 }
 
 function isCheckerBackground(data: Uint8ClampedArray, index: number): boolean {
@@ -143,8 +150,9 @@ function getOpaqueBounds(data: Uint8ClampedArray, width: number, height: number)
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    image.crossOrigin = 'anonymous'; // Help with potential CORS issues
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Failed to load App Store logo'));
+    image.onerror = () => reject(new Error(`Failed to load image: ${src}`));
     image.decoding = 'async';
     image.src = src;
   });

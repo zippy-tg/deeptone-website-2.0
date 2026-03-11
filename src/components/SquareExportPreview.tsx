@@ -131,11 +131,29 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                 <div className="square-ui-shell square-ui-shell-minimal">
                     <div className="square-ui-minimal-badge">
                         <div className="avatar-app-badge">
-                            <img src={appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                            <div 
+                                className="avatar-app-badge-main-icon" 
+                                style={{ 
+                                    backgroundImage: `url(${appIconBase64 || appIcon})`, 
+                                    backgroundSize: 'contain', 
+                                    backgroundRepeat: 'no-repeat',
+                                    width: '22px',
+                                    height: '22px'
+                                }} 
+                            />
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
-                                    <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" />
+                                    <div 
+                                        className="avatar-app-badge-store-icon-image" 
+                                        style={{ 
+                                            backgroundImage: `url(${appStoreBadgeSrc})`, 
+                                            backgroundSize: 'contain', 
+                                            backgroundRepeat: 'no-repeat',
+                                            width: '24px',
+                                            height: '24px'
+                                        }}
+                                    />
                                 ) : null}
                             </div>
                         </div>
@@ -144,7 +162,16 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                     <div className="square-ui-minimal-avatar-ring" style={minimalAvatarRingStyle}>
                         <div className="square-ui-minimal-avatar-circle">
                             {avatarSrc ? (
-                                <img src={avatarSrc} alt="Avatar" className="square-ui-minimal-avatar-image" />
+                                <div 
+                                    className="square-ui-minimal-avatar-image" 
+                                    style={{ 
+                                        backgroundImage: `url(${avatarSrc})`, 
+                                        backgroundSize: 'cover', 
+                                        backgroundPosition: 'center',
+                                        width: '100%',
+                                        height: '100%'
+                                    }}
+                                />
                             ) : (
                                 <Book className="square-ui-avatar-fallback" size={136} />
                             )}
@@ -222,7 +249,16 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                             <p>Download on the App Store</p>
                         </div>
                         <div className="square-ui-download-row square-ui-download-row-strong">
-                            <img src={appIconBase64 || appIcon} alt="App Icon" />
+                            <div 
+                                style={{ 
+                                    backgroundImage: `url(${appIconBase64 || appIcon})`, 
+                                    backgroundSize: 'contain', 
+                                    backgroundRepeat: 'no-repeat',
+                                    width: '22px', 
+                                    height: '22px',
+                                    borderRadius: '4px'
+                                }} 
+                            />
                             <p>Search <span>Deeptone</span></p>
                         </div>
                     </div>
@@ -233,7 +269,16 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                         <div className={`square-ui-avatar-ring ${mode === 'blackpill' ? 'square-ui-avatar-ring-compact' : ''}`}>
                             <div className="square-ui-avatar-circle">
                                 {avatarSrc ? (
-                                    <img src={avatarSrc} alt="Avatar" className="square-ui-avatar-image" />
+                                    <div 
+                                        className="square-ui-avatar-image"
+                                        style={{ 
+                                            backgroundImage: `url(${avatarSrc})`, 
+                                            backgroundSize: 'cover', 
+                                            backgroundPosition: 'center',
+                                            width: '100%',
+                                            height: '100%'
+                                        }}
+                                    />
                                 ) : (
                                     <Book className="square-ui-avatar-fallback" size={88} />
                                 )}
@@ -241,11 +286,29 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                         </div>
 
                         <div className={`avatar-app-badge ${mode === 'blackpill' ? 'avatar-app-badge-compact' : ''}`}>
-                            <img src={appIconBase64 || appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                            <div 
+                                className="avatar-app-badge-main-icon" 
+                                style={{ 
+                                    backgroundImage: `url(${appIconBase64 || appIcon})`, 
+                                    backgroundSize: 'contain', 
+                                    backgroundRepeat: 'no-repeat',
+                                    width: '22px',
+                                    height: '22px'
+                                }} 
+                            />
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
-                                    <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" />
+                                    <div 
+                                        className="avatar-app-badge-store-icon-image" 
+                                        style={{ 
+                                            backgroundImage: `url(${appStoreBadgeSrc})`, 
+                                            backgroundSize: 'contain', 
+                                            backgroundRepeat: 'no-repeat',
+                                            width: '24px',
+                                            height: '24px'
+                                        }}
+                                    />
                                 ) : null}
                             </div>
                         </div>
@@ -259,7 +322,16 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
 
                         <div className="square-ui-rating-block">
                             <div className="square-ui-rating-line">
-                                <img src={appIconBase64 || appIcon} alt="App Icon" className="square-ui-rating-icon" />
+                                <div 
+                                    className="square-ui-rating-icon"
+                                    style={{ 
+                                        backgroundImage: `url(${appIconBase64 || appIcon})`, 
+                                        backgroundSize: 'contain', 
+                                        backgroundRepeat: 'no-repeat',
+                                        width: '40px',
+                                        height: '40px'
+                                    }} 
+                                />
                                 <span className="square-ui-rating-value">{data.looksmaxxingRating}</span>
                             </div>
 
@@ -352,7 +424,16 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                             <p>Download on the App Store</p>
                         </div>
                         <div className="square-ui-download-row square-ui-download-row-strong">
-                            <img src={appIconBase64 || appIcon} alt="App Icon" />
+                            <div 
+                                style={{ 
+                                    backgroundImage: `url(${appIconBase64 || appIcon})`, 
+                                    backgroundSize: 'contain', 
+                                    backgroundRepeat: 'no-repeat',
+                                    width: '22px', 
+                                    height: '22px',
+                                    borderRadius: '4px'
+                                }} 
+                            />
                             <p>Search <span>Deeptone</span></p>
                         </div>
                     </div>
