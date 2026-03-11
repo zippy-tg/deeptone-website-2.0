@@ -79,6 +79,22 @@ export async function extractTransparentLogo(src: string): Promise<string> {
   return trimmedCanvas.toDataURL('image/png');
 }
 
+export async function imageToDataUri(src: string): Promise<string> {
+  const image = await loadImage(src);
+  const canvas = document.createElement('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    throw new Error('Could not create image canvas context');
+  }
+
+  context.drawImage(image, 0, 0);
+
+  return canvas.toDataURL('image/png');
+}
+
 function isCheckerBackground(data: Uint8ClampedArray, index: number): boolean {
   const r = data[index];
   const g = data[index + 1];
@@ -127,6 +143,7 @@ function getOpaqueBounds(data: Uint8ClampedArray, width: number, height: number)
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    image.crossOrigin = 'anonymous';
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error('Failed to load App Store logo'));
     image.decoding = 'async';

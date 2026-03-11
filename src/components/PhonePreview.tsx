@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import type { ProfileData, DashboardMode } from '../types';
 import { Book, Activity, Mic2, ArrowDownToLine, Zap } from 'lucide-react';
 import { renderCroppedAvatar } from '../utils/avatarCrop';
-import { extractTransparentLogo } from '../utils/appStoreLogo';
+import { extractTransparentLogo, imageToDataUri } from '../utils/appStoreLogo';
 import { hexToRgba } from '../utils/color';
 
 const AppleLogo = ({ size = 20 }: { size?: number }) => (
@@ -25,6 +25,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     const isExportRender = renderMode === 'export';
     const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
     const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
+    const [appIconSrc, setAppIconSrc] = useState('/app-icon.png');
     const [viewportWidth, setViewportWidth] = useState(() => (
         typeof window === 'undefined' ? 1440 : window.innerWidth
     ));
@@ -80,6 +81,25 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         };
     }, []);
 
+    useEffect(() => {
+        let cancelled = false;
+
+        imageToDataUri('/app-icon.png')
+            .then((src) => {
+                if (!cancelled) {
+                    setAppIconSrc(src);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setAppIconSrc('/app-icon.png');
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     useEffect(() => {
         if (typeof window === 'undefined') {
@@ -189,7 +209,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                             <div className="minimal-layout">
                                 <div className="minimal-top-badge">
                                     <div className="avatar-app-badge">
-                                        <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
+                                        <img src={appIconSrc} alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
                                         <span>DEEPTONE</span>
                                         <div className="avatar-app-badge-store-icon">
                                             {appStoreBadgeSrc ? (
@@ -281,7 +301,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
-                                    <img src="/app-icon.png" alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
+                                    <img src={appIconSrc} alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
                                     <p style={{ fontSize: '16px', fontWeight: 700 }}>Search <span style={{ color: 'var(--blue-light)' }}>Deeptone</span></p>
                                 </div>
                             </div>
@@ -299,7 +319,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     </div>
                                 </div>
                                 <div className={`avatar-app-badge ${isBlackpill ? 'avatar-app-badge-compact' : ''}`}>
-                                    <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
+                                    <img src={appIconSrc} alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
                                     <span>DEEPTONE</span>
                                     <div className="avatar-app-badge-store-icon">
                                         {appStoreBadgeSrc ? (
@@ -312,7 +332,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
 
                                 <div className="badges" style={{ justifyContent: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <div className="badge looksmaxxing-badge" style={{ gap: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-15px' }}>
-                                        <img src="/app-icon.png" alt="App Icon" width="40" height="40" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                                        <img src={appIconSrc} alt="App Icon" width="40" height="40" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                                         <span style={{ textTransform: 'capitalize', fontSize: '34px', fontWeight: 900 }}>{data.looksmaxxingRating}</span>
                                     </div>
                                     {mode === 'blackpill' && (
@@ -416,7 +436,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
-                                    <img src="/app-icon.png" alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
+                                    <img src={appIconSrc} alt="App Icon" width="22" height="22" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
                                     <p style={{ fontSize: '16px', fontWeight: 700 }}>Search <span style={{ color: 'var(--blue-light)' }}>Deeptone</span></p>
                                 </div>
                             </div>
