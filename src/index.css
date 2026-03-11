@@ -362,49 +362,16 @@ select {
 
 /* ── Export-safe overrides ──
    html-to-image renders backdrop-filter, colored box-shadow glows,
-   and CSS filter as opaque blue rectangles. Strip them during capture. */
+   CSS filter, and text-shadow as opaque blue rectangles.
+   Use a wildcard to strip them from ALL elements during capture. */
 
-.export-render .avatar-app-badge,
-.square-ui-export .avatar-app-badge {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 0 0 1px rgba(12, 26, 68, 0.25) !important;
-}
-
-.export-render .avatar-app-badge span,
-.square-ui-export .avatar-app-badge span {
+.export-render *,
+.square-ui-export * {
+  box-shadow: none !important;
   text-shadow: none !important;
-}
-
-.export-render .avatar-app-badge-main-icon,
-.export-render .avatar-app-badge-store-icon,
-.square-ui-export .avatar-app-badge-main-icon,
-.square-ui-export .avatar-app-badge-store-icon {
-  filter: none !important;
-}
-
-.export-render .bottom-nav,
-.square-ui-export .bottom-nav {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-
-.export-render .minimal-stat-card,
-.export-render .minimal-stat-card-potential,
-.export-render .minimal-stat-card-vocal-age {
-  box-shadow: none !important;
-}
-
-.export-render .avatar-ring,
-.square-ui-export .square-ui-avatar-ring {
-  box-shadow: none !important;
-}
-
-.export-render .minimal-progress-fill,
-.square-ui-export .square-ui-minimal-progress-fill {
-  box-shadow: none !important;
+  filter: none !important;
 }
 
 .square-ui-shell {
