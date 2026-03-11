@@ -80,7 +80,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
         };
     }, []);
 
-    const allAssetsLoaded = !data.avatarImage || (renderedAvatar && appIconBase64);
+    const allAssetsLoaded = (!data.avatarImage || renderedAvatar) && appIconBase64 && appStoreBadgeSrc;
 
     if (!allAssetsLoaded) {
         return null;

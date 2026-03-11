@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AudioLines, Flame, Sparkles, SlidersHorizontal } from 'lucide-react';
 import { ControlPanel } from './components/ControlPanel';
 import { PhonePreview } from './components/PhonePreview';
 import { SquareExportPreview } from './components/SquareExportPreview';
 import type { ProfileData, DashboardMode } from './types';
+import { extractTransparentLogo, imageToDataUri } from './utils/appStoreLogo';
+import appIcon from './assets/app-icon.png';
+import appStoreLogoBase from './assets/app-store-logo.webp';
+import iphoneFrame from './assets/iphone-frame.png';
 import './App.css';
 
 function App() {
@@ -48,6 +52,34 @@ function App() {
     ratingSubtitle: "Its over buddy",
     useIphoneFrame: false
   });
+
+  const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
+  const [appIconBase64, setAppIconBase64] = useState<string | null>(null);
+  const [iphoneFrameBase64, setIphoneFrameBase64] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    extractTransparentLogo(appStoreLogoBase)
+      .then((src) => {
+        if (!cancelled) setAppStoreBadgeSrc(src);
+      })
+      .catch(() => {
+        if (!cancelled) setAppStoreBadgeSrc(null);
+      });
+
+    imageToDataUri(appIcon)
+      .then(uri => { if (!cancelled) setAppIconBase64(uri); })
+      .catch(() => { if (!cancelled) setAppIconBase64(appIcon); });
+
+    imageToDataUri(iphoneFrame)
+      .then(uri => { if (!cancelled) setIphoneFrameBase64(uri); })
+      .catch(() => { if (!cancelled) setIphoneFrameBase64(iphoneFrame); });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleModeSelect = (mode: DashboardMode) => {
     setDashboardMode(mode);
@@ -142,22 +174,14 @@ function App() {
         </div>
       </div>
       <div className="hidden-export-surface" aria-hidden="true">
-        {/* Voodoo image to force decode and keep asset alive in mobile Safari */}
-        {profileData.avatarImage && (
-          <img 
-            src={profileData.avatarImage} 
-            style={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              width: '1px', 
-              height: '1px', 
-              opacity: 0.01,
-              pointerEvents: 'none'
-            }} 
-            alt=""
-          />
-        )}
+        {/* Voodoo images to force decode and keep assets alive in mobile Safari */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '1px', height: '1px', opacity: 0.01, pointerEvents: 'none', display: 'flex' }}>
+          {profileData.avatarImage && <img src={profileData.avatarImage} alt="" style={{ width: '1px', height: '1px' }} />}
+          {appIconBase64 && <img src={appIconBase64} alt="" style={{ width: '1px', height: '1px' }} />}
+          {appStoreBadgeSrc && <img src={appStoreBadgeSrc} alt="" style={{ width: '1px', height: '1px' }} />}
+          {iphoneFrameBase64 && <img src={iphoneFrameBase64} alt="" style={{ width: '1px', height: '1px' }} />}
+        </div>
+
         <PhonePreview
           data={profileData}
           mode={dashboardMode}

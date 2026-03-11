@@ -112,7 +112,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         : previewWidth;
     const liveScale = liveTargetWidth / previewWidth;
 
-    const allAssetsLoaded = !data.avatarImage || (renderedAvatar && appIconBase64 && (data.useIphoneFrame ? iphoneFrameBase64 : true));
+    const allAssetsLoaded = (!data.avatarImage || renderedAvatar) && appIconBase64 && appStoreBadgeSrc && (data.useIphoneFrame ? iphoneFrameBase64 : true);
 
     const liveShellStyle = useMemo(() => (
         isLiveMobile
