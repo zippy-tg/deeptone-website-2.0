@@ -45,7 +45,9 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         let cancelled = false;
 
         if (!data.avatarImage) {
-            setRenderedAvatar(null);
+            setTimeout(() => {
+                if (!cancelled) setRenderedAvatar(null);
+            }, 0);
             return;
         }
 
@@ -100,7 +102,36 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         };
     }, []);
 
+    const frameAspectRatio = 1024 / 495;
+    const basePreviewHeight = data.useIphoneFrame
+        ? previewWidth * frameAspectRatio
+        : previewWidth * (16 / 9);
+    const isLiveMobile = renderMode === 'live' && viewportWidth <= 720;
+    const liveTargetWidth = isLiveMobile
+        ? Math.min(previewWidth, viewportWidth - (viewportWidth <= 480 ? 24 : 28))
+        : previewWidth;
+    const liveScale = liveTargetWidth / previewWidth;
+
     const allAssetsLoaded = !data.avatarImage || (renderedAvatar && appIconBase64 && (data.useIphoneFrame ? iphoneFrameBase64 : true));
+
+    const liveShellStyle = useMemo(() => (
+        isLiveMobile
+            ? {
+                width: `${liveTargetWidth}px`,
+                height: `${basePreviewHeight * liveScale}px`
+            }
+            : undefined
+    ), [basePreviewHeight, isLiveMobile, liveScale, liveTargetWidth]);
+
+    const livePreviewStyle = useMemo(() => ({
+        width: `${previewWidth}px`,
+        ...(isLiveMobile
+            ? {
+                transform: `scale(${liveScale})`,
+                transformOrigin: 'top center'
+            }
+            : {})
+    }), [isLiveMobile, liveScale, previewWidth]);
 
     if (isExportRender && !allAssetsLoaded) {
         return null;
@@ -130,32 +161,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
         background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,
         boxShadow: isExportRender ? 'none' : `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
     };
-    const frameAspectRatio = 1024 / 495;
-    const basePreviewHeight = data.useIphoneFrame
-        ? previewWidth * frameAspectRatio
-        : previewWidth * (16 / 9);
-    const isLiveMobile = renderMode === 'live' && viewportWidth <= 720;
-    const liveTargetWidth = isLiveMobile
-        ? Math.min(previewWidth, viewportWidth - (viewportWidth <= 480 ? 24 : 28))
-        : previewWidth;
-    const liveScale = liveTargetWidth / previewWidth;
-    const liveShellStyle = useMemo(() => (
-        isLiveMobile
-            ? {
-                width: `${liveTargetWidth}px`,
-                height: `${basePreviewHeight * liveScale}px`
-            }
-            : undefined
-    ), [basePreviewHeight, isLiveMobile, liveScale, liveTargetWidth]);
-    const livePreviewStyle = useMemo(() => ({
-        width: `${previewWidth}px`,
-        ...(isLiveMobile
-            ? {
-                transform: `scale(${liveScale})`,
-                transformOrigin: 'top center'
-            }
-            : {})
-    }), [isLiveMobile, liveScale, previewWidth]);
+
     const previewContent = (
         <div
             id={exportId}
@@ -198,7 +204,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                             <div className="minimal-layout">
                                 <div className="minimal-top-badge">
                                     <div className="avatar-app-badge">
-                                        <img src={appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
+                                        <img src={appIconBase64 || appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" width="22" height="22" />
                                         <span>DEEPTONE</span>
                                         <div className="avatar-app-badge-store-icon">
                                             {appStoreBadgeSrc ? (

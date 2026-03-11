@@ -27,7 +27,9 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
         let cancelled = false;
 
         if (!data.avatarImage) {
-            setRenderedAvatar(null);
+            setTimeout(() => {
+                if (!cancelled) setRenderedAvatar(null);
+            }, 0);
             return;
         }
 
