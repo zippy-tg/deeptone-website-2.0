@@ -371,6 +371,11 @@ select {
   text-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* Explicitly strip filters from containers but allow images to keep their natural rendering */
+.export-render *:not(img),
+.square-ui-export *:not(img) {
   filter: none !important;
 }
 

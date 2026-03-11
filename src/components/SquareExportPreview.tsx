@@ -2,8 +2,10 @@ import { useEffect, useId, useState } from 'react';
 import { Book, Activity, Mic2, ArrowDownToLine, Zap } from 'lucide-react';
 import type { DashboardMode, ProfileData } from '../types';
 import { renderCroppedAvatar } from '../utils/avatarCrop';
-import { extractTransparentLogo, imageToDataUri } from '../utils/appStoreLogo';
+import { extractTransparentLogo } from '../utils/appStoreLogo';
 import { hexToRgba } from '../utils/color';
+import appIcon from '../assets/app-icon.png';
+import appStoreLogoBase from '../assets/app-store-logo.webp';
 
 interface SquareExportPreviewProps {
     data: ProfileData;
@@ -19,15 +21,13 @@ const AppleLogo = ({ size = 18 }: { size?: number }) => (
 export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
     const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
     const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
-    const [appIconSrc, setAppIconSrc] = useState('/app-icon.png');
 
     useEffect(() => {
         let cancelled = false;
 
         if (!data.avatarImage) {
-            return () => {
-                cancelled = true;
-            };
+            setRenderedAvatar(null);
+            return;
         }
 
         renderCroppedAvatar(
@@ -55,7 +55,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
     useEffect(() => {
         let cancelled = false;
 
-        extractTransparentLogo('/app-store-logo.webp')
+        extractTransparentLogo(appStoreLogoBase)
             .then((src) => {
                 if (!cancelled) {
                     setAppStoreBadgeSrc(src);
@@ -64,26 +64,6 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
             .catch(() => {
                 if (!cancelled) {
                     setAppStoreBadgeSrc(null);
-                }
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        imageToDataUri('/app-icon.png')
-            .then((src) => {
-                if (!cancelled) {
-                    setAppIconSrc(src);
-                }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setAppIconSrc('/app-icon.png');
                 }
             });
 
@@ -138,7 +118,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                 <div className="square-ui-shell square-ui-shell-minimal">
                     <div className="square-ui-minimal-badge">
                         <div className="avatar-app-badge">
-                            <img src={appIconSrc} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                            <img src={appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
@@ -229,7 +209,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                             <p>Download on the App Store</p>
                         </div>
                         <div className="square-ui-download-row square-ui-download-row-strong">
-                            <img src={appIconSrc} alt="App Icon" />
+                            <img src={appIcon} alt="App Icon" />
                             <p>Search <span>Deeptone</span></p>
                         </div>
                     </div>
@@ -248,7 +228,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                         </div>
 
                         <div className={`avatar-app-badge ${mode === 'blackpill' ? 'avatar-app-badge-compact' : ''}`}>
-                            <img src={appIconSrc} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                            <img src={appIcon} alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
@@ -266,7 +246,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
 
                         <div className="square-ui-rating-block">
                             <div className="square-ui-rating-line">
-                                <img src={appIconSrc} alt="App Icon" className="square-ui-rating-icon" />
+                                <img src={appIcon} alt="App Icon" className="square-ui-rating-icon" />
                                 <span className="square-ui-rating-value">{data.looksmaxxingRating}</span>
                             </div>
 
@@ -359,7 +339,7 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                             <p>Download on the App Store</p>
                         </div>
                         <div className="square-ui-download-row square-ui-download-row-strong">
-                            <img src={appIconSrc} alt="App Icon" />
+                            <img src={appIcon} alt="App Icon" />
                             <p>Search <span>Deeptone</span></p>
                         </div>
                     </div>
