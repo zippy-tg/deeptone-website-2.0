@@ -9,6 +9,21 @@ export interface ProfileData {
   authorityScore: number;
   vocalAgeScore: number;
   potentialScore: number;
+  potentialRating: string;
+  minimalHzColorStart: string;
+  minimalHzColorEnd: string;
+  minimalPotentialColorStart: string;
+  minimalPotentialColorEnd: string;
+  minimalVocalAgeColorStart: string;
+  minimalVocalAgeColorEnd: string;
+  minimalAvatarRingColorStart: string;
+  minimalAvatarRingColorEnd: string;
+  authorityColorStart: string;
+  authorityColorEnd: string;
+  vocalAgeColorStart: string;
+  vocalAgeColorEnd: string;
+  potentialColorStart: string;
+  potentialColorEnd: string;
   baselineFrequency: number;
   voiceClassification: string;
   depthRating: string;
@@ -23,4 +38,4 @@ export interface ProfileData {
   useIphoneFrame: boolean;
 }
 
-export type DashboardMode = 'standard' | 'blackpill' | 'testVoice';
+export type DashboardMode = 'standard' | 'blackpill' | 'testVoice' | 'minimal';

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import type { ProfileData, DashboardMode } from '../types';
 import { Book, Activity, Mic2, ArrowDownToLine, Zap } from 'lucide-react';
 import { renderCroppedAvatar } from '../utils/avatarCrop';
 import { extractTransparentLogo } from '../utils/appStoreLogo';
+import { hexToRgba } from '../utils/color';
 
 const AppleLogo = ({ size = 20 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 384 512" fill="currentColor">
@@ -13,13 +14,19 @@ const AppleLogo = ({ size = 20 }: { size?: number }) => (
 interface PhonePreviewProps {
     data: ProfileData;
     mode: DashboardMode;
+    exportId?: string;
+    renderMode?: 'live' | 'export';
 }
 
-export function PhonePreview({ data, mode }: PhonePreviewProps) {
+export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: PhonePreviewProps) {
     const previewWidth = data.useIphoneFrame ? 380 : 450;
     const isBlackpill = mode === 'blackpill';
+    const isMinimal = mode === 'minimal';
     const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
     const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
+    const [viewportWidth, setViewportWidth] = useState(() => (
+        typeof window === 'undefined' ? 1440 : window.innerWidth
+    ));
 
     useEffect(() => {
         let cancelled = false;
@@ -72,17 +79,78 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
         };
     }, []);
 
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return undefined;
+        }
+
+        const handleResize = () => {
+            setViewportWidth(window.innerWidth);
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     const hzCircleSize = isBlackpill
         ? (data.useIphoneFrame ? 138 : 148)
         : 160;
+    const hzProgress = Math.max(8, Math.min(100, (Number.parseFloat(data.hzValue) || 0) / 2));
+    const vocalAgeProgress = Math.max(8, Math.min(100, data.vocalAgeScore));
+    const potentialRating = data.potentialRating;
+    const createMinimalCardStyle = (startColor: string, endColor: string) => ({
+        background: `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
+        border: `1px solid ${hexToRgba(endColor, 0.3)}`,
+        boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
+    });
+    const createGradientTextStyle = (startColor: string, endColor: string) => ({
+        backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        color: 'transparent',
+        WebkitTextFillColor: 'transparent',
+        textShadow: `0 0 18px ${hexToRgba(endColor, 0.2)}`
+    });
+    const minimalAvatarRingStyle = {
+        background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,
+        boxShadow: `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
+    };
+    const frameAspectRatio = 1024 / 495;
+    const basePreviewHeight = data.useIphoneFrame
+        ? previewWidth * frameAspectRatio
+        : previewWidth * (16 / 9);
+    const isLiveMobile = renderMode === 'live' && viewportWidth <= 720;
+    const liveTargetWidth = isLiveMobile
+        ? Math.min(previewWidth, viewportWidth - (viewportWidth <= 480 ? 24 : 28))
+        : previewWidth;
+    const liveScale = liveTargetWidth / previewWidth;
+    const liveShellStyle = useMemo(() => (
+        isLiveMobile
+            ? {
+                width: `${liveTargetWidth}px`,
+                height: `${basePreviewHeight * liveScale}px`
+            }
+            : undefined
+    ), [basePreviewHeight, isLiveMobile, liveScale, liveTargetWidth]);
+    const livePreviewStyle = useMemo(() => ({
+        width: `${previewWidth}px`,
+        ...(isLiveMobile
+            ? {
+                transform: `scale(${liveScale})`,
+                transformOrigin: 'top center'
+            }
+            : {})
+    }), [isLiveMobile, liveScale, previewWidth]);
 
-    return (
+    const previewContent = (
         <div
-            id="phone-preview-export"
-            className={`phone-preview-export ${data.useIphoneFrame ? 'with-frame' : 'without-frame'}`}
-            style={{
-                width: `${previewWidth}px`
-            }}
+            id={exportId}
+            className={`phone-preview-export ${renderMode === 'export' ? 'export-render' : 'live-render'} ${data.useIphoneFrame ? 'with-frame' : 'without-frame'}`}
+            style={livePreviewStyle}
         >
             {data.useIphoneFrame && (
                 <img
@@ -93,7 +161,7 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
             )}
 
             <div className={`phone-screen ${data.useIphoneFrame ? 'phone-screen-framed' : 'phone-screen-plain'}`}>
-                <div className={`screen-content ${mode === 'blackpill' ? 'blackpill-layout' : mode === 'testVoice' ? 'test-voice-layout' : 'standard-layout'}`} style={{ overflowY: mode === 'blackpill' || mode === 'testVoice' ? 'hidden' : 'auto' }}>
+                <div className={`screen-content ${mode === 'blackpill' ? 'blackpill-layout' : mode === 'testVoice' ? 'test-voice-layout' : mode === 'minimal' ? 'minimal-screen-layout' : 'standard-layout'}`} style={{ overflowY: mode === 'blackpill' || mode === 'testVoice' || mode === 'minimal' ? 'hidden' : 'auto' }}>
                     {mode === 'testVoice' ? (
                         <>
                             <div className="test-voice-header">
@@ -113,6 +181,108 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                                 <p style={{ fontSize: '15px', fontWeight: 700, color: '#61729A', marginBottom: '8px' }}>Your Voice</p>
                                 <h2 style={{ fontSize: '56px', fontWeight: 900, color: '#3A78FF', marginBottom: '16px' }}>{data.hzValue} {data.hzValue ? 'Hz' : ''}</h2>
                                 <p style={{ fontSize: '18px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'white' }}>{data.ratingSubtitle}</p>
+                            </div>
+                        </>
+                    ) : isMinimal ? (
+                        <>
+                            <div className="minimal-layout">
+                                <div className="minimal-top-badge">
+                                    <div className="avatar-app-badge">
+                                        <img src="/app-icon.png" alt="Deeptone app icon" className="avatar-app-badge-main-icon" />
+                                        <span>DEEPTONE</span>
+                                        <div className="avatar-app-badge-store-icon">
+                                            {appStoreBadgeSrc ? (
+                                                <img src={appStoreBadgeSrc} alt="App Store logo" className="avatar-app-badge-store-icon-image" />
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="minimal-avatar-ring" style={minimalAvatarRingStyle}>
+                                    <div className="minimal-avatar-circle">
+                                        {data.avatarImage ? (
+                                            <img src={renderedAvatar ?? data.avatarImage} alt="Avatar" className="minimal-avatar-image" />
+                                        ) : (
+                                            <Book className="minimal-avatar-fallback" size={82} />
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="minimal-stat-card" style={createMinimalCardStyle(data.minimalHzColorStart, data.minimalHzColorEnd)}>
+                                    <div className="minimal-stat-head">
+                                        <div>
+                                            <span className="minimal-stat-label">Voice Hz</span>
+                                            <p className="minimal-stat-subtitle">Deeptone voice reading</p>
+                                        </div>
+                                        <span className="minimal-stat-rating" style={createGradientTextStyle(data.minimalHzColorStart, data.minimalHzColorEnd)}>{data.looksmaxxingRating}</span>
+                                    </div>
+                                    <div className="minimal-stat-value-row">
+                                        <span className="minimal-stat-value">{data.hzValue}</span>
+                                        <span className="minimal-stat-unit" style={{ color: data.minimalHzColorEnd }}>{data.hzValue ? 'Hz' : ''}</span>
+                                    </div>
+                                    <div className="minimal-progress-track">
+                                        <div
+                                            className="minimal-progress-fill"
+                                            style={{
+                                                width: `${hzProgress}%`,
+                                                background: `linear-gradient(90deg, ${data.minimalHzColorStart} 0%, ${data.minimalHzColorEnd} 100%)`,
+                                                boxShadow: `0 0 12px ${data.minimalHzColorEnd}`
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="minimal-metrics-grid">
+                                    <div className="minimal-stat-card minimal-stat-card-grid minimal-stat-card-potential" style={createMinimalCardStyle(data.minimalPotentialColorStart, data.minimalPotentialColorEnd)}>
+                                        <div className="minimal-stat-head">
+                                            <div>
+                                                <span className="minimal-stat-label">Potential</span>
+                                                <p className="minimal-stat-subtitle minimal-stat-subtitle-rating" style={createGradientTextStyle(data.minimalPotentialColorStart, data.minimalPotentialColorEnd)}>{potentialRating}</p>
+                                            </div>
+                                            <span className="minimal-stat-rating" style={createGradientTextStyle(data.minimalPotentialColorStart, data.minimalPotentialColorEnd)}>{data.potentialScore}</span>
+                                        </div>
+                                        <div className="minimal-progress-track">
+                                            <div
+                                                className="minimal-progress-fill minimal-progress-fill-strong"
+                                                style={{
+                                                    width: `${Math.max(8, Math.min(100, data.potentialScore))}%`,
+                                                    background: `linear-gradient(90deg, ${data.minimalPotentialColorStart} 0%, ${data.minimalPotentialColorEnd} 100%)`,
+                                                    boxShadow: `0 0 12px ${data.minimalPotentialColorEnd}`
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="minimal-stat-card minimal-stat-card-grid minimal-stat-card-vocal-age" style={createMinimalCardStyle(data.minimalVocalAgeColorStart, data.minimalVocalAgeColorEnd)}>
+                                        <div className="minimal-stat-head">
+                                            <div>
+                                                <span className="minimal-stat-label">Vocal Age</span>
+                                            </div>
+                                            <span className="minimal-stat-rating" style={createGradientTextStyle(data.minimalVocalAgeColorStart, data.minimalVocalAgeColorEnd)}>{data.vocalAgeScore}</span>
+                                        </div>
+                                        <div className="minimal-progress-track">
+                                            <div
+                                                className="minimal-progress-fill minimal-progress-fill-cyan"
+                                                style={{
+                                                    width: `${vocalAgeProgress}%`,
+                                                    background: `linear-gradient(90deg, ${data.minimalVocalAgeColorStart} 0%, ${data.minimalVocalAgeColorEnd} 100%)`,
+                                                    boxShadow: `0 0 12px ${data.minimalVocalAgeColorEnd}`
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="app-store-download" style={{ textAlign: 'center', marginTop: 'auto', marginBottom: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <AppleLogo size={16} />
+                                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Download on the App Store</p>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
+                                    <img src="/app-icon.png" alt="App Icon" style={{ width: '22px', height: '22px', borderRadius: '4px' }} />
+                                    <p style={{ fontSize: '16px', fontWeight: 700 }}>Search <span style={{ color: 'var(--blue-light)' }}>Deeptone</span></p>
+                                </div>
                             </div>
                         </>
                     ) : (
@@ -158,9 +328,9 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
                             {mode === 'standard' ? (
                                 <>
                                     <div className="scores-row" style={{ marginBottom: 0 }}>
-                                        <ScoreCircle value={data.authorityScore} label="Authority" color="white" />
-                                        <ScoreCircle value={data.vocalAgeScore} label="Vocal Age" color="blue-light" />
-                                        <ScoreCircle value={data.potentialScore} label="Potential" color="blue-dark" />
+                                        <ScoreCircle value={data.authorityScore} label="Authority" startColor={data.authorityColorStart} endColor={data.authorityColorEnd} />
+                                        <ScoreCircle value={data.vocalAgeScore} label="Vocal Age" startColor={data.vocalAgeColorStart} endColor={data.vocalAgeColorEnd} />
+                                        <ScoreCircle value={data.potentialScore} label="Potential" startColor={data.potentialColorStart} endColor={data.potentialColorEnd} />
                                     </div>
 
                                     <div className="voice-signature-card" style={{ marginBottom: 0 }}>
@@ -255,17 +425,42 @@ export function PhonePreview({ data, mode }: PhonePreviewProps) {
             </div>
         </div>
     );
+
+    if (isLiveMobile) {
+        return (
+            <div className="phone-preview-live-shell" style={liveShellStyle}>
+                {previewContent}
+            </div>
+        );
+    }
+
+    return previewContent;
 }
 
-function ScoreCircle({ value, label, color }: { value: number; label: string; color: string }) {
+function ScoreCircle({ value, label, startColor, endColor }: { value: number; label: string; startColor: string; endColor: string }) {
+    const gradientId = useId().replace(/:/g, '');
+    const glowId = `${gradientId}-glow`;
     const radius = 42;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (value / 100) * circumference;
 
     return (
         <div className="score-item">
-            <div className={`circular-progress ${color}`}>
+            <div className="circular-progress">
                 <svg width="104" height="104" viewBox="0 0 100 100">
+                    <defs>
+                        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor={startColor} />
+                            <stop offset="100%" stopColor={endColor} />
+                        </linearGradient>
+                        <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
+                            <feGaussianBlur stdDeviation="3.5" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
                     <circle
                         className="circle-bg"
                         cx="50" cy="50" r={radius}
@@ -279,6 +474,8 @@ function ScoreCircle({ value, label, color }: { value: number; label: string; co
                         strokeDashoffset={strokeDashoffset}
                         transform="rotate(-90 50 50)"
                         strokeLinecap="round"
+                        stroke={`url(#${gradientId})`}
+                        filter={`url(#${glowId})`}
                     />
                 </svg>
                 <div className="score-value">{value}</div>
