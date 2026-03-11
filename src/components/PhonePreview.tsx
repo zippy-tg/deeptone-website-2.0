@@ -22,6 +22,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     const previewWidth = data.useIphoneFrame ? 380 : 450;
     const isBlackpill = mode === 'blackpill';
     const isMinimal = mode === 'minimal';
+    const isExportRender = renderMode === 'export';
     const [renderedAvatar, setRenderedAvatar] = useState<string | null>(data.avatarImage);
     const [appStoreBadgeSrc, setAppStoreBadgeSrc] = useState<string | null>(null);
     const [viewportWidth, setViewportWidth] = useState(() => (
@@ -103,21 +104,32 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     const vocalAgeProgress = Math.max(8, Math.min(100, data.vocalAgeScore));
     const potentialRating = data.potentialRating;
     const createMinimalCardStyle = (startColor: string, endColor: string) => ({
-        background: `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
+        background: isExportRender
+            ? `linear-gradient(135deg, #101319 0%, #0c1018 52%, ${hexToRgba(startColor, 0.14)} 100%)`
+            : `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
         border: `1px solid ${hexToRgba(endColor, 0.3)}`,
-        boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
+        boxShadow: isExportRender
+            ? 'inset 0 1px 0 rgba(255, 255, 255, 0.04)'
+            : `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
     });
-    const createGradientTextStyle = (startColor: string, endColor: string) => ({
-        backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        color: 'transparent',
-        WebkitTextFillColor: 'transparent',
-        textShadow: `0 0 18px ${hexToRgba(endColor, 0.2)}`
-    });
+    const createGradientTextStyle = (startColor: string, endColor: string) => (
+        isExportRender
+            ? {
+                color: endColor,
+                textShadow: 'none'
+            }
+            : {
+                backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                WebkitTextFillColor: 'transparent',
+                textShadow: `0 0 18px ${hexToRgba(endColor, 0.2)}`
+            }
+    );
     const minimalAvatarRingStyle = {
         background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,
-        boxShadow: `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
+        boxShadow: isExportRender ? 'none' : `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
     };
     const frameAspectRatio = 1024 / 495;
     const basePreviewHeight = data.useIphoneFrame

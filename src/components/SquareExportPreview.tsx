@@ -76,21 +76,17 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
     const vocalAgeProgress = Math.max(8, Math.min(100, data.vocalAgeScore));
     const potentialRating = data.potentialRating;
     const createMinimalCardStyle = (startColor: string, endColor: string) => ({
-        background: `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.18)} 72%, ${hexToRgba(endColor, 0.32)} 100%)`,
+        background: `linear-gradient(135deg, #101319 0%, #0c1018 52%, ${hexToRgba(startColor, 0.14)} 100%)`,
         border: `1px solid ${hexToRgba(endColor, 0.34)}`,
-        boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 32px rgba(0, 0, 0, 0.34), 0 0 30px ${hexToRgba(endColor, 0.16)}`
+        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04)'
     });
-    const createGradientTextStyle = (startColor: string, endColor: string) => ({
-        backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        color: 'transparent',
-        WebkitTextFillColor: 'transparent',
-        textShadow: `0 0 22px ${hexToRgba(endColor, 0.22)}`
+    const createGradientTextStyle = (_startColor: string, endColor: string) => ({
+        color: endColor,
+        textShadow: 'none'
     });
     const minimalAvatarRingStyle = {
         background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,
-        boxShadow: `0 0 44px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
+        boxShadow: 'none'
     };
 
     return (

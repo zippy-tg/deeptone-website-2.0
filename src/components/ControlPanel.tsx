@@ -81,6 +81,12 @@ export function ControlPanel({ data, onChange, mode, onModeChange, modeLocked = 
             minimumCaptureScale
         );
 
+        await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => resolve());
+            });
+        });
+
         const capturedCanvas = await html2canvas(previewElement, {
             scale: captureScale,
             useCORS: true,
@@ -88,7 +94,25 @@ export function ControlPanel({ data, onChange, mode, onModeChange, modeLocked = 
             windowWidth: 1280,
             windowHeight: 1400,
             scrollX: 0,
-            scrollY: 0
+            scrollY: 0,
+            onclone: (clonedDocument) => {
+                const clonedPreview = clonedDocument.getElementById(
+                    format === 'square' ? 'square-preview-export' : 'phone-preview-export'
+                );
+                if (!clonedPreview) return;
+
+                if (format === 'portrait') {
+                    const clonedSurface = clonedPreview.parentElement;
+                    if (clonedSurface) {
+                        clonedSurface.setAttribute('style', 'position: fixed; left: 0; top: 0; pointer-events: none;');
+                    }
+                }
+
+                clonedPreview.setAttribute(
+                    'style',
+                    `${clonedPreview.getAttribute('style') ?? ''}; position: ${format === 'square' ? 'fixed' : 'relative'}; left: 0; top: 0; transform: none;`
+                );
+            }
         });
 
         const exportCanvas = document.createElement('canvas');
