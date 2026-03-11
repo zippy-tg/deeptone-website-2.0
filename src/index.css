@@ -346,14 +346,15 @@ select {
 
 .hidden-export-surface {
   position: fixed;
-  left: 0;
-  top: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0.01;
+  left: -2000px;
+  top: -2000px;
+  width: 1300px;
+  height: 5000px;
+  overflow: visible;
+  opacity: 1;
   pointer-events: none;
-  z-index: -1;
+  z-index: -100;
+  background-color: #000;
 }
 
 .square-ui-export {
@@ -1027,11 +1028,14 @@ select {
 
 .iphone-frame {
   width: 100%;
-  height: auto;
+  height: 100%;
   z-index: 10;
   pointer-events: none;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
+  object-fit: fill;
 }
 
 .phone-screen {
