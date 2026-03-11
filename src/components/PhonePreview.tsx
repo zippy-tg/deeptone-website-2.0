@@ -107,7 +107,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     const createMinimalCardStyle = (startColor: string, endColor: string) => ({
         background: `linear-gradient(135deg, rgba(14, 16, 24, 0.98) 0%, rgba(9, 12, 18, 0.98) 44%, ${hexToRgba(startColor, 0.16)} 72%, ${hexToRgba(endColor, 0.28)} 100%)`,
         border: `1px solid ${hexToRgba(endColor, 0.3)}`,
-        boxShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
+        boxShadow: isExportRender ? 'none' : `inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 24px rgba(0, 0, 0, 0.32), 0 0 24px ${hexToRgba(endColor, 0.14)}`
     });
     const createGradientTextStyle = (startColor: string, endColor: string) => ({
         backgroundImage: `linear-gradient(135deg, ${startColor} 0%, ${endColor} 100%)`,
@@ -119,7 +119,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
     });
     const minimalAvatarRingStyle = {
         background: `linear-gradient(180deg, ${data.minimalAvatarRingColorStart} 0%, ${data.minimalAvatarRingColorEnd} 100%)`,
-        boxShadow: `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
+        boxShadow: isExportRender ? 'none' : `0 0 32px ${hexToRgba(data.minimalAvatarRingColorEnd, 0.24)}`
     };
     const frameAspectRatio = 1024 / 495;
     const basePreviewHeight = data.useIphoneFrame
@@ -227,7 +227,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                             style={{
                                                 width: `${hzProgress}%`,
                                                 background: `linear-gradient(90deg, ${data.minimalHzColorStart} 0%, ${data.minimalHzColorEnd} 100%)`,
-                                                boxShadow: `0 0 12px ${data.minimalHzColorEnd}`
+                                                boxShadow: isExportRender ? 'none' : `0 0 14px ${data.minimalHzColorEnd}`
                                             }}
                                         />
                                     </div>
@@ -248,7 +248,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                                 style={{
                                                     width: `${Math.max(8, Math.min(100, data.potentialScore))}%`,
                                                     background: `linear-gradient(90deg, ${data.minimalPotentialColorStart} 0%, ${data.minimalPotentialColorEnd} 100%)`,
-                                                    boxShadow: `0 0 12px ${data.minimalPotentialColorEnd}`
+                                                    boxShadow: isExportRender ? 'none' : `0 0 14px ${data.minimalPotentialColorEnd}`
                                                 }}
                                             />
                                         </div>
@@ -267,7 +267,7 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                                 style={{
                                                     width: `${vocalAgeProgress}%`,
                                                     background: `linear-gradient(90deg, ${data.minimalVocalAgeColorStart} 0%, ${data.minimalVocalAgeColorEnd} 100%)`,
-                                                    boxShadow: `0 0 12px ${data.minimalVocalAgeColorEnd}`
+                                                    boxShadow: isExportRender ? 'none' : `0 0 14px ${data.minimalVocalAgeColorEnd}`
                                                 }}
                                             />
                                         </div>
