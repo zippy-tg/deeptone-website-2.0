@@ -87,13 +87,17 @@ export function ControlPanel({ data, onChange, mode, onModeChange, modeLocked = 
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const url = URL.createObjectURL(file);
-        updateData({
-            avatarImage: url,
-            avatarScale: 1,
-            avatarOffsetX: 0,
-            avatarOffsetY: 0
-        });
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target?.result as string;
+            updateData({
+                avatarImage: dataUrl,
+                avatarScale: 1,
+                avatarOffsetX: 0,
+                avatarOffsetY: 0
+            });
+        };
+        reader.readAsDataURL(file);
     };
 
     const resetAvatarCrop = () => {
