@@ -207,8 +207,8 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                         <div 
                                             className="avatar-app-badge-main-icon" 
                                             style={{ 
-                                                width: '22px', 
-                                                height: '22px'
+                                                width: '26px', 
+                                                height: '26px'
                                             }} 
                                         >
                                             <img src={appIconBase64 || appIcon} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
@@ -219,8 +219,8 @@ export function PhonePreview({ data, mode, exportId, renderMode = 'live' }: Phon
                                                 <div 
                                                     className="avatar-app-badge-store-icon-image" 
                                                     style={{ 
-                                                        width: '24px', 
-                                                        height: '24px'
+                                                        width: '28px', 
+                                                        height: '28px'
                                                     }} 
                                                 >
                                                     <img src={appStoreBadgeSrc} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />

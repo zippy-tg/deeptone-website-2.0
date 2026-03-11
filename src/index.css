@@ -1586,8 +1586,8 @@ select {
 }
 
 .avatar-app-badge-main-icon {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   object-fit: contain;
   image-rendering: auto;
@@ -1600,8 +1600,8 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   filter: drop-shadow(0 0 10px rgba(58, 120, 255, 0.22));
 }
 

@@ -131,13 +131,13 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                 <div className="square-ui-shell square-ui-shell-minimal">
                     <div className="square-ui-minimal-badge">
                         <div className="avatar-app-badge">
-                            <div className="avatar-app-badge-main-icon" style={{ width: '22px', height: '22px' }}>
+                            <div className="avatar-app-badge-main-icon" style={{ width: '26px', height: '26px' }}>
                                 <img src={appIconBase64 || appIcon} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
                             </div>
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
-                                    <div className="avatar-app-badge-store-icon-image" style={{ width: '24px', height: '24px' }}>
+                                    <div className="avatar-app-badge-store-icon-image" style={{ width: '28px', height: '28px' }}>
                                         <img src={appStoreBadgeSrc} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
                                     </div>
                                 ) : null}
@@ -245,13 +245,13 @@ export function SquareExportPreview({ data, mode }: SquareExportPreviewProps) {
                         </div>
 
                         <div className={`avatar-app-badge ${mode === 'blackpill' ? 'avatar-app-badge-compact' : ''}`}>
-                            <div className="avatar-app-badge-main-icon" style={{ width: '22px', height: '22px' }}>
+                            <div className="avatar-app-badge-main-icon" style={{ width: '26px', height: '26px' }}>
                                 <img src={appIconBase64 || appIcon} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
                             </div>
                             <span>DEEPTONE</span>
                             <div className="avatar-app-badge-store-icon">
                                 {appStoreBadgeSrc ? (
-                                    <div className="avatar-app-badge-store-icon-image" style={{ width: '24px', height: '24px' }}>
+                                    <div className="avatar-app-badge-store-icon-image" style={{ width: '28px', height: '28px' }}>
                                         <img src={appStoreBadgeSrc} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
                                     </div>
                                 ) : null}
